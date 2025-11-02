@@ -1,0 +1,21 @@
+{
+  "name": "cftop",
+  "module": "src/index.tsx",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "bun run --watch src/index.tsx"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@opentui/core": "^0.1.30",
+    "@opentui/react": "^0.1.30",
+    "cloudflare": "^5.2.0",
+    "react": "^19.1.1"
+  }
+}

@@ -1,0 +1,236 @@
+import { TextAttributes } from "@opentui/core";
+import { render, useKeyboard, useRenderer } from "@opentui/react";
+
+import { parseArgs } from 'util';
+import { configExists, createConfig, getConfig } from "./config";
+import { getDurableObjects, getWorkers, runObservabilityQuery } from "./cf";
+import { useEffect, useState } from "react";
+import type { Script } from "cloudflare/resources/workers.mjs";
+import { CloudflareAPI } from "./api";
+import type { WorkerSummary } from "./types";
+import type { DurableObject } from "cloudflare/resources/durable-objects/namespaces.mjs";
+import Cloudflare from "cloudflare";
+import WorkersBox from "./components/workers-box";
+import SingleWorkerView from "./views/workers/single";
+import HomeView from "./views/home";
+
+const { values, positionals } = parseArgs({
+    args: Bun.argv,
+    options: {
+        apiToken: {
+            type: 'string',
+            short: 't',
+        },
+        accountId: {
+            type: 'string',
+            short: 'a',
+        },
+    },
+    strict: true,
+    allowPositionals: true,
+});
+
+if (positionals.length == 2) {
+    // user has just called cftop
+    function App() {
+        const views = ['home', 'single-worker'];
+        const panels = ['workers', 'durables', 'buckets', 'config']
+        const renderer = useRenderer()
+        const [view, setView] = useState<string>("home");
+        const [workers, setWorkers] = useState<Script[]>([]);
+        const [durableObjects, setDurableObjects] = useState<{ namespace: string, objects: DurableObject[] | undefined }[]>([]);
+        const [focussedSection, setFocussedSection] = useState<string>("workers");
+        const [focussedItem, setFocussedItem] = useState<string>("");
+        const [showFocussedItemLogs, setShowFocussedItemLogs] = useState<boolean>(false);
+        const [focussedItemLogs, setFocussedItemLogs] = useState<any[]>([]);
+        const [metrics, setMetrics] = useState<WorkerSummary[]>([]);
+        const [loading, setLoading] = useState<boolean>(false);
+
+        const { start, end } = CloudflareAPI.getTimeRange(24);
+
+        useEffect(() => {
+            setLoading(true);
+
+            const fetchAll = async () => {
+                await Promise.all([
+                    (async () => {
+                        const workers = await getWorkers();
+                        setWorkers(workers);
+                    })(),
+                    (async () => {
+                        const durableObjects = await getDurableObjects();
+                        setDurableObjects(durableObjects);
+                    })(),
+                    (async () => {
+                        const config = await getConfig();
+                        const api = new CloudflareAPI({
+                            apiToken: config.apiToken,
+                            accountTag: config.accountId,
+                        });
+                        const metrics = await api.getWorkerSummary(start, end);
+                        setMetrics(metrics);
+                    })(),
+                ]);
+                setLoading(false);
+            };
+
+            fetchAll();
+        }, []);
+
+        useKeyboard((key) => {
+            if (key.name === 'q') {
+                process.exit(0);
+            }
+
+            if (key.name === 'tab') {
+                setFocussedSection(panels[(panels.indexOf(focussedSection) + 1) % panels.length] as string);
+            }
+
+            if (key.name === 'w') {
+                setFocussedSection('workers');
+                setFocussedItem(workers[0]?.id || '');
+            }
+            if (key.name === 'd') {
+                setFocussedSection('durables');
+                setFocussedItem(durableObjects[0]?.objects?.[0]?.id || '');
+            }
+            if (key.name === 'b') {
+                setFocussedSection('buckets');
+            }
+            if (key.name === 'c') {
+                setFocussedSection('config');
+            }
+
+            if (key.ctrl && key.name === "k") {
+                renderer?.toggleDebugOverlay()
+                renderer?.console.toggle()
+            }
+
+            if (key.name === 'up') {
+                if (focussedSection === 'workers') {
+                    const currentIndex = workers.findIndex(w => w.id === focussedItem);
+                    const prevIndex = currentIndex <= 0 ? workers.length - 1 : currentIndex - 1;
+                    setFocussedItem(workers[prevIndex]?.id || '');
+                } else {
+                    setFocussedItem('');
+                }
+            }
+            if (key.name === 'down') {
+                if (focussedSection === 'workers') {
+                    const currentIndex = workers.findIndex(w => w.id === focussedItem);
+                    const nextIndex = (currentIndex + 1) % workers.length;
+                    setFocussedItem(workers[nextIndex]?.id || '');
+                } else {
+                    setFocussedItem('');
+                }
+            }
+
+            if (key.name === 'Enter' || key.name === 'Return' || key.name === 'space') {
+                console.log('enter pressed')
+                if (focussedSection === 'workers') {
+                    const worker = workers.find(w => w.id === focussedItem);
+                    if (worker) {
+                        runObservabilityQuery(worker?.id || '').then((response) => {
+                            console.log(response);
+                            setFocussedItemLogs(response);
+                        });
+                        setShowFocussedItemLogs(true);
+                        setView('single-worker');
+                    }
+                }
+            }
+        })
+
+        let visibleView: React.ReactNode;
+
+        if (view === 'home') {
+            visibleView = <HomeView metrics={metrics} workers={workers} durableObjects={durableObjects} focussedItem={focussedItem} focussedSection={focussedSection} />
+        } else if (view === 'single-worker') {
+            visibleView = <SingleWorkerView focussedItemLogs={focussedItemLogs} />
+        }
+
+        return (
+            <box>
+                <box borderStyle="single">
+                    <ascii-font font="tiny" text="cftop" />
+                </box>
+                {loading ? (
+                    <box borderStyle="single" flexGrow={1}>
+                        <text>Loading...</text>
+                    </box>
+                ) : (
+                    visibleView
+                )
+                }
+            </box >
+        );
+    }
+
+    render(<App />);
+} else if (positionals.length == 3) {
+    // user has called cftop with a command
+    const cmd = positionals[2];
+
+    switch (cmd) {
+        case 'init':
+            // initialize the config
+            const configExistsResult = await configExists();
+            console.log(values.apiToken);
+            console.log(values.accountId);
+            if (configExistsResult) {
+                console.error('Config already exists');
+                process.exit(1);
+            }
+
+            // create the config
+            if (!values.apiToken) {
+                console.error('API token is required');
+                process.exit(1);
+            }
+
+            if (!values.accountId) {
+                console.error('Account ID is required');
+                process.exit(1);
+            }
+
+            await createConfig(values.apiToken, values.accountId);
+            console.log('Config created successfully');
+            process.exit(0);
+        case 'test-observability':
+            const config = await getConfig();
+
+            // Calculate a proper timeframe (last 24 hours)
+            const now = Date.now();
+            const yesterday = now - (24 * 60 * 60 * 1000);
+
+            // Test the observability using SDK
+            const client = new Cloudflare({
+                apiToken: config.apiToken,
+            });
+
+            // For temporary queries, provide parameters 
+            // SDK requires queryId but API treats it as temporary query when parameters are provided
+            try {
+                const response = await client.workers.observability.telemetry.query({
+                    account_id: config.accountId,
+                    queryId: '', // Empty string to satisfy SDK validation - API will use parameters instead
+                    timeframe: { from: yesterday, to: now },
+                    parameters: {
+                        limit: 100,
+                    },
+                    view: 'events',
+                } as any);
+                console.log(JSON.stringify(response, null, 2));
+            } catch (error: any) {
+                console.error('Error:', error.message);
+                if (error.body) {
+                    console.error('Response body:', JSON.stringify(error.body, null, 2));
+                }
+                process.exit(1);
+            }
+            process.exit(0);
+        default:
+            console.error(`Unknown command: ${cmd}`);
+            process.exit(1);
+    }
+}

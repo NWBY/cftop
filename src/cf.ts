@@ -49,3 +49,43 @@ export const getDurableObjects = async (): Promise<any[]> => {
         return [];
     }
 }
+
+export const runObservabilityQuery = async (workerId: string): Promise<any> => {
+    try {
+        console.log('running observability query for worker', workerId);
+        const { apiToken, accountId } = await getConfig();
+
+        const client = new Cloudflare({
+            apiToken: apiToken,
+        });
+        const now = Date.now();
+        const yesterday = now - (24 * 60 * 60 * 1000);
+
+        const response = await client.workers.observability.telemetry.query({
+            account_id: accountId,
+            queryId: '',
+            ignoreSeries: true, // we don't want to get the series data
+            timeframe: { from: yesterday, to: now },
+            parameters: {
+                limit: 100,
+                datasets: ['cloudflare-workers'],
+                filters: [
+                    {
+                        key: "$metadata.service",
+                        value: workerId,
+                        type: "string",
+                        operation: "eq",
+                    }
+                ],
+                calculations: [],
+                havings: [],
+                groupBys: [],
+            },
+            view: 'events',
+        } as any);
+        return response.events;
+    } catch (error) {
+        console.error(error);
+        return null;
+    }
+}

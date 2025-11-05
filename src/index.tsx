@@ -3,6 +3,7 @@ import { render, useKeyboard, useRenderer } from "@opentui/react";
 
 import { parseArgs } from 'util';
 import { configExists, createConfig, getConfig } from "./config";
+import packageJson from "../package.json";
 import { getDomains, getDurableObjects, getR2Buckets, getWorkers, runObservabilityQuery } from "./cf";
 import { useEffect, useState } from "react";
 import type { Domain, Script } from "cloudflare/resources/workers.mjs";
@@ -259,6 +260,9 @@ if (positionals.length == 2) {
                 }
                 process.exit(1);
             }
+            process.exit(0);
+        case 'version':
+            console.log(packageJson.version);
             process.exit(0);
         default:
             console.error(`Unknown command: ${cmd}`);

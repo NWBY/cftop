@@ -3,7 +3,7 @@ import { render, useKeyboard, useRenderer } from "@opentui/react";
 
 import { parseArgs } from 'util';
 import { configExists, createConfig, getConfig } from "./config";
-import { getDurableObjects, getWorkers, runObservabilityQuery } from "./cf";
+import { getDurableObjects, getR2Buckets, getWorkers, runObservabilityQuery } from "./cf";
 import { useEffect, useState } from "react";
 import type { Script } from "cloudflare/resources/workers.mjs";
 import { CloudflareAPI } from "./api";
@@ -13,6 +13,8 @@ import Cloudflare from "cloudflare";
 import WorkersBox from "./components/workers-box";
 import SingleWorkerView from "./views/workers/single";
 import HomeView from "./views/home";
+import Keybindings from "./components/keybindings";
+import type { Bucket } from "cloudflare/resources/r2.mjs";
 
 const { values, positionals } = parseArgs({
     args: Bun.argv,
@@ -39,6 +41,7 @@ if (positionals.length == 2) {
         const [view, setView] = useState<string>("home");
         const [workers, setWorkers] = useState<Script[]>([]);
         const [durableObjects, setDurableObjects] = useState<{ namespace: string, objects: DurableObject[] | undefined }[]>([]);
+        const [r2Buckets, setR2Buckets] = useState<Bucket[]>([]);
         const [focussedSection, setFocussedSection] = useState<string>("workers");
         const [focussedItem, setFocussedItem] = useState<string>("");
         const [showFocussedItemLogs, setShowFocussedItemLogs] = useState<boolean>(false);
@@ -70,6 +73,10 @@ if (positionals.length == 2) {
                         const metrics = await api.getWorkerSummary(start, end);
                         setMetrics(metrics);
                     })(),
+                    (async () => {
+                        const r2Buckets = await getR2Buckets();
+                        setR2Buckets(r2Buckets || []);
+                    })(),
                 ]);
                 setLoading(false);
             };
@@ -78,12 +85,19 @@ if (positionals.length == 2) {
         }, []);
 
         useKeyboard((key) => {
+            console.log(key.name);
             if (key.name === 'q') {
                 process.exit(0);
             }
 
             if (key.name === 'tab') {
                 setFocussedSection(panels[(panels.indexOf(focussedSection) + 1) % panels.length] as string);
+            }
+
+            if (key.name === 'h') {
+                setFocussedSection('workers');
+                setFocussedItem('');
+                setView('home');
             }
 
             if (key.name === 'w') {
@@ -107,25 +121,29 @@ if (positionals.length == 2) {
             }
 
             if (key.name === 'up') {
-                if (focussedSection === 'workers') {
-                    const currentIndex = workers.findIndex(w => w.id === focussedItem);
-                    const prevIndex = currentIndex <= 0 ? workers.length - 1 : currentIndex - 1;
-                    setFocussedItem(workers[prevIndex]?.id || '');
-                } else {
-                    setFocussedItem('');
+                if (view === 'home') {
+                    if (focussedSection === 'workers') {
+                        const currentIndex = workers.findIndex(w => w.id === focussedItem);
+                        const prevIndex = currentIndex <= 0 ? workers.length - 1 : currentIndex - 1;
+                        setFocussedItem(workers[prevIndex]?.id || '');
+                    } else {
+                        setFocussedItem('');
+                    }
                 }
             }
             if (key.name === 'down') {
-                if (focussedSection === 'workers') {
-                    const currentIndex = workers.findIndex(w => w.id === focussedItem);
-                    const nextIndex = (currentIndex + 1) % workers.length;
-                    setFocussedItem(workers[nextIndex]?.id || '');
-                } else {
-                    setFocussedItem('');
+                if (view === 'home') {
+                    if (focussedSection === 'workers') {
+                        const currentIndex = workers.findIndex(w => w.id === focussedItem);
+                        const nextIndex = (currentIndex + 1) % workers.length;
+                        setFocussedItem(workers[nextIndex]?.id || '');
+                    } else {
+                        setFocussedItem('');
+                    }
                 }
             }
 
-            if (key.name === 'Enter' || key.name === 'Return' || key.name === 'space') {
+            if (key.name === 'Enter' || key.name === 'return' || key.name === 'space') {
                 console.log('enter pressed')
                 if (focussedSection === 'workers') {
                     const worker = workers.find(w => w.id === focussedItem);
@@ -144,14 +162,14 @@ if (positionals.length == 2) {
         let visibleView: React.ReactNode;
 
         if (view === 'home') {
-            visibleView = <HomeView metrics={metrics} workers={workers} durableObjects={durableObjects} focussedItem={focussedItem} focussedSection={focussedSection} />
+            visibleView = <HomeView metrics={metrics} workers={workers} durableObjects={durableObjects} r2Buckets={r2Buckets} focussedItem={focussedItem} focussedSection={focussedSection} />
         } else if (view === 'single-worker') {
-            visibleView = <SingleWorkerView focussedItemLogs={focussedItemLogs} />
+            visibleView = <SingleWorkerView focussedItemLogs={focussedItemLogs} focussedItem={focussedItem} />
         }
 
         return (
             <box>
-                <box borderStyle="single">
+                <box borderStyle="single" flexShrink={0}>
                     <ascii-font font="tiny" text="cftop" />
                 </box>
                 {loading ? (
@@ -162,6 +180,9 @@ if (positionals.length == 2) {
                     visibleView
                 )
                 }
+                <box flexShrink={0}>
+                    <Keybindings />
+                </box>
             </box >
         );
     }

@@ -1,9 +1,12 @@
-import type { Script } from "cloudflare/resources/workers.mjs";
+import type { Domain, Script } from "cloudflare/resources/workers.mjs";
 import type { DurableObject } from "cloudflare/resources/durable-objects/namespaces.mjs";
+import type { Bucket } from "cloudflare/resources/r2.mjs";
 import type { WorkerSummary } from "../types";
 import WorkersBox from "../components/workers-box";
+import R2Box from "../components/r2-box";
+import DomainsBox from "../components/domains-box";
 
-function HomeView({ metrics, workers, durableObjects, focussedItem, focussedSection }: { metrics: WorkerSummary[], workers: Script[], durableObjects: DurableObject[], focussedItem: string, focussedSection: string }) {
+function HomeView({ metrics, workers, durableObjects, r2Buckets, domains, focussedItem, focussedSection }: { metrics: WorkerSummary[], workers: Script[], durableObjects: DurableObject[], r2Buckets: Bucket[], domains: Domain[], focussedItem: string, focussedSection: string }) {
     return (
         <box>
             <box borderStyle="single" width="100%" flexDirection="row">
@@ -44,17 +47,8 @@ function HomeView({ metrics, workers, durableObjects, focussedItem, focussedSect
                         </box>
                     )}
                 </box>
-                <box borderStyle="single" width="25%" style={{ borderColor: focussedSection === 'buckets' ? 'orange' : '#FFFFFF' }}>
-                    <text>
-                        <strong>
-                            <u>R2 Buckets</u>
-                        </strong>
-                    </text>
-                </box>
-                <box borderStyle="single" width="25%" style={{ borderColor: focussedSection === 'config' ? 'orange' : '#FFFFFF' }}>
-                    <text>
-                    </text>
-                </box>
+                <R2Box r2Buckets={r2Buckets} focussedItem={focussedItem} focussedSection={focussedSection} />
+                <DomainsBox domains={domains} focussedItem={focussedItem} focussedSection={focussedSection} />
             </box>
         </box>
     );

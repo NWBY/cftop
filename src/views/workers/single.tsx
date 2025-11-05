@@ -1,13 +1,13 @@
-function SingleWorkerView({ focussedItemLogs }: { focussedItemLogs: any[] }) {
+function SingleWorkerView({ focussedItemLogs, focussedItem }: { focussedItemLogs: any[], focussedItem: string }) {
     return (
         <scrollbox borderStyle="single" width="100%" focused>
             <box>
                 <text>
-                    Single Worker View
+                    <strong><u>{focussedItem} events</u></strong>
                 </text>
                 {/* @ts-ignore */}
                 {focussedItemLogs?.events?.map((log: any) => (
-                    <text key={log.$workers.requestId} paddingBottom={1}>
+                    <text key={log.$workers.requestId}>
                         {log.$metadata.messageTemplate}
                     </text>
                 ))}

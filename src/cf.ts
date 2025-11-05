@@ -1,6 +1,7 @@
 import Cloudflare from 'cloudflare';
 import { getConfig } from './config';
-import type { Script } from 'cloudflare/resources/workers.mjs';
+import type { Domain, Script } from 'cloudflare/resources/workers.mjs';
+import type { Bucket } from 'cloudflare/resources/r2.mjs';
 
 export const getWorkers = async (): Promise<Script[]> => {
     try {
@@ -44,6 +45,40 @@ export const getDurableObjects = async (): Promise<any[]> => {
         }
 
         return durableObjects;
+    } catch (error) {
+        console.error(error);
+        return [];
+    }
+}
+
+export const getR2Buckets = async (): Promise<Bucket[] | undefined> => {
+    try {
+        const { apiToken, accountId } = await getConfig();
+
+        const client = new Cloudflare({
+            apiToken: apiToken,
+        });
+        const res = await client.r2.buckets.list({
+            account_id: accountId,
+        });
+        return res.buckets;
+    } catch (error) {
+        console.error(error);
+        return [];
+    }
+}
+
+export const getDomains = async (): Promise<Domain[] | undefined> => {
+    try {
+        const { apiToken, accountId } = await getConfig();
+
+        const client = new Cloudflare({
+            apiToken: apiToken,
+        });
+        const res = await client.workers.domains.list({
+            account_id: accountId,
+        });
+        return res.result;
     } catch (error) {
         console.error(error);
         return [];

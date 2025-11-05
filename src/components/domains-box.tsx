@@ -13,7 +13,7 @@ function DomainsBox({ domains, focussedItem, focussedSection }: { domains: Domai
             {domains.length > 0 ? (
                 domains.map((domain) => (
                     <text key={domain.id} bg={focussedItem === domain.id ? 'orange' : 'transparent'}>
-                        {domain.id}
+                        {domain.hostname} ({domain.service})
                     </text>
                 ))
             ) : (

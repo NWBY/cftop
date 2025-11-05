@@ -3,9 +3,9 @@ import { render, useKeyboard, useRenderer } from "@opentui/react";
 
 import { parseArgs } from 'util';
 import { configExists, createConfig, getConfig } from "./config";
-import { getDurableObjects, getR2Buckets, getWorkers, runObservabilityQuery } from "./cf";
+import { getDomains, getDurableObjects, getR2Buckets, getWorkers, runObservabilityQuery } from "./cf";
 import { useEffect, useState } from "react";
-import type { Script } from "cloudflare/resources/workers.mjs";
+import type { Domain, Script } from "cloudflare/resources/workers.mjs";
 import { CloudflareAPI } from "./api";
 import type { WorkerSummary } from "./types";
 import type { DurableObject } from "cloudflare/resources/durable-objects/namespaces.mjs";
@@ -42,6 +42,7 @@ if (positionals.length == 2) {
         const [workers, setWorkers] = useState<Script[]>([]);
         const [durableObjects, setDurableObjects] = useState<{ namespace: string, objects: DurableObject[] | undefined }[]>([]);
         const [r2Buckets, setR2Buckets] = useState<Bucket[]>([]);
+        const [domains, setDomains] = useState<Domain[]>([]);
         const [focussedSection, setFocussedSection] = useState<string>("workers");
         const [focussedItem, setFocussedItem] = useState<string>("");
         const [showFocussedItemLogs, setShowFocussedItemLogs] = useState<boolean>(false);
@@ -76,6 +77,10 @@ if (positionals.length == 2) {
                     (async () => {
                         const r2Buckets = await getR2Buckets();
                         setR2Buckets(r2Buckets || []);
+                    })(),
+                    (async () => {
+                        const domains = await getDomains();
+                        setDomains(domains || []);
                     })(),
                 ]);
                 setLoading(false);
@@ -162,7 +167,7 @@ if (positionals.length == 2) {
         let visibleView: React.ReactNode;
 
         if (view === 'home') {
-            visibleView = <HomeView metrics={metrics} workers={workers} durableObjects={durableObjects} r2Buckets={r2Buckets} focussedItem={focussedItem} focussedSection={focussedSection} />
+            visibleView = <HomeView metrics={metrics} workers={workers} durableObjects={durableObjects} r2Buckets={r2Buckets} domains={domains} focussedItem={focussedItem} focussedSection={focussedSection} />
         } else if (view === 'single-worker') {
             visibleView = <SingleWorkerView focussedItemLogs={focussedItemLogs} focussedItem={focussedItem} />
         }

@@ -1,0 +1,79 @@
+name: Build and Release
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build:
+    name: Build for ${{ matrix.os }}-${{ matrix.arch }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            arch: x64
+            target: linux-x64
+          - os: ubuntu-latest-arm64
+            arch: arm64
+            target: linux-arm64
+          - os: macos-14
+            arch: x64
+            target: darwin-x64
+          - os: macos-latest
+            arch: arm64
+            target: darwin-arm64
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build executable
+        run: |
+          bun build --compile --outfile cftop-${{ matrix.target }} src/index.tsx
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cftop-${{ matrix.target }}
+          path: cftop-${{ matrix.target }}
+
+  release:
+    name: Create Release Assets
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+
+      - name: Make binaries executable
+        run: |
+          chmod +x ./artifacts/**/cftop-*
+
+      - name: Upload release assets
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          for artifact in ./artifacts/*/cftop-*; do
+            filename=$(basename "$artifact")
+            echo "Uploading $filename..."
+            gh release upload "${{ github.event.release.tag_name }}" "$artifact" --clobber
+          done
+        shell: bash

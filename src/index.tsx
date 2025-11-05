@@ -33,6 +33,13 @@ const { values, positionals } = parseArgs({
 });
 
 if (positionals.length == 2) {
+    const configExistsResult = await configExists();
+
+    if (!configExistsResult) {
+        console.error('Config not found, please run `cftop init`');
+        process.exit(1);
+    }
+
     // user has just called cftop
     function App() {
         const views = ['home', 'single-worker'];
@@ -201,8 +208,6 @@ if (positionals.length == 2) {
         case 'init':
             // initialize the config
             const configExistsResult = await configExists();
-            console.log(values.apiToken);
-            console.log(values.accountId);
             if (configExistsResult) {
                 console.error('Config already exists');
                 process.exit(1);

@@ -7,7 +7,7 @@ Terminal UI for viewing and monitoring Cloudflare Workers (and related tools) fr
 Install via the shell script:
 
 ```
-curl -fsSL https://github.com/NWBY/cftop/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/NWBY/cftop/refs/heads/main/install.sh | sh
 ```
 
 ## Setup

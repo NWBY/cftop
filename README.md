@@ -10,6 +10,10 @@ Install via the shell script:
 curl -fsSL https://raw.githubusercontent.com/NWBY/cftop/refs/heads/main/install.sh | sh
 ```
 
+## Upgrading
+
+To upgrade to the latest version you can simply run the install command above.
+
 ## Setup
 
 To use `cftop` you will need two things:

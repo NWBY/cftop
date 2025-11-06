@@ -5,7 +5,7 @@ import { parseArgs } from 'util';
 import { configExists, createConfig, getConfig } from "./config";
 import packageJson from "../package.json";
 import { getDomains, getDurableObjects, getR2Buckets, getWorkers, runObservabilityQuery } from "./cf";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import type { Domain, Script } from "cloudflare/resources/workers.mjs";
 import { CloudflareAPI } from "./api";
 import type { WorkerSummary } from "./types";
@@ -59,7 +59,17 @@ if (positionals.length == 2) {
         const [loading, setLoading] = useState<boolean>(false);
 
         const { start, end } = CloudflareAPI.getTimeRange(24);
+        const nowTimestamp = Date.now();
+        const startTimestamp = nowTimestamp - (24 * 60 * 60 * 1000);
+        const lastSuccessfulFocussedItemLogsTimestampRef = useRef<number>(startTimestamp);
+        const focussedItemRef = useRef<string>(focussedItem);
 
+        // Keep ref in sync with state
+        useEffect(() => {
+            focussedItemRef.current = focussedItem;
+        }, [focussedItem]);
+
+        // Initial data fetch
         useEffect(() => {
             setLoading(true);
 
@@ -97,8 +107,49 @@ if (positionals.length == 2) {
             fetchAll();
         }, []);
 
+        // Interval for fetching logs when in single-worker view
+        useEffect(() => {
+            if (view === 'single-worker' && focussedItem) {
+                // Reset the timestamp when entering single-worker view to the current time
+                // This ensures we only fetch NEW logs from this point forward
+                lastSuccessfulFocussedItemLogsTimestampRef.current = Date.now();
+
+                const interval = setInterval(() => {
+                    const nowTimestamp = Date.now();
+                    const fromTimestamp = lastSuccessfulFocussedItemLogsTimestampRef.current;
+                    const currentFocussedItem = focussedItemRef.current;
+                    console.log(`fetching focussed item logs for ${currentFocussedItem} from ${fromTimestamp} to ${nowTimestamp}`);
+
+                    runObservabilityQuery(currentFocussedItem, { from: fromTimestamp, to: nowTimestamp }).then((response) => {
+                        if (response && Array.isArray(response) && response.length > 0) {
+                            console.log(`Received ${response.length} new logs`);
+                            setFocussedItemLogs((prevLogs) => {
+                                const updated = [...response, ...prevLogs];
+                                return updated;
+                            });
+                            // Only update timestamp after successful fetch
+                            lastSuccessfulFocussedItemLogsTimestampRef.current = nowTimestamp;
+                        } else {
+                            console.log('No new logs received or response was not an array');
+                            // Still update timestamp to avoid fetching the same time range again
+                            // lastFocussedItemLogsTimestampRef.current = nowTimestamp;
+                        }
+                    }).catch((error) => {
+                        // Update timestamp even on error to avoid getting stuck
+                        // lastFocussedItemLogsTimestampRef.current = nowTimestamp;
+                    });
+                }, 10000); // 10 seconds as requested
+
+                return () => {
+                    clearInterval(interval);
+                };
+            } else {
+                // Reset logs when leaving single-worker view
+                setFocussedItemLogs([]);
+            }
+        }, [view, focussedItem]);
+
         useKeyboard((key) => {
-            console.log(key.name);
             if (key.name === 'q') {
                 process.exit(0);
             }
@@ -156,14 +207,16 @@ if (positionals.length == 2) {
                 }
             }
 
-            if (key.name === 'Enter' || key.name === 'return' || key.name === 'space') {
-                console.log('enter pressed')
+            if (key.name === 'return') {
                 if (focussedSection === 'workers') {
                     const worker = workers.find(w => w.id === focussedItem);
                     if (worker) {
-                        runObservabilityQuery(worker?.id || '').then((response) => {
-                            console.log(response);
-                            setFocussedItemLogs(response);
+                        runObservabilityQuery(worker?.id || '', { from: startTimestamp, to: nowTimestamp }).then((response) => {
+                            if (response && Array.isArray(response)) {
+                                setFocussedItemLogs(response);
+                            } else {
+                                setFocussedItemLogs([]);
+                            }
                         });
                         setShowFocussedItemLogs(true);
                         setView('single-worker');

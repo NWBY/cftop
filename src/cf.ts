@@ -85,22 +85,19 @@ export const getDomains = async (): Promise<Domain[] | undefined> => {
     }
 }
 
-export const runObservabilityQuery = async (workerId: string): Promise<any> => {
+export const runObservabilityQuery = async (workerId: string, timeframe: { from: number, to: number }): Promise<any> => {
     try {
-        console.log('running observability query for worker', workerId);
         const { apiToken, accountId } = await getConfig();
 
         const client = new Cloudflare({
             apiToken: apiToken,
         });
-        const now = Date.now();
-        const yesterday = now - (24 * 60 * 60 * 1000);
 
         const response = await client.workers.observability.telemetry.query({
             account_id: accountId,
             queryId: '',
             ignoreSeries: true, // we don't want to get the series data
-            timeframe: { from: yesterday, to: now },
+            timeframe: timeframe,
             parameters: {
                 limit: 100,
                 datasets: ['cloudflare-workers'],
@@ -118,7 +115,12 @@ export const runObservabilityQuery = async (workerId: string): Promise<any> => {
             },
             view: 'events',
         } as any);
-        return response.events;
+
+        // Return the events array from the response
+        if (response && response.events && response.events.events && Array.isArray(response.events.events)) {
+            return response.events.events;
+        }
+        return null;
     } catch (error) {
         console.error(error);
         return null;

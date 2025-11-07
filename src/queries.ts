@@ -132,6 +132,8 @@ export const GET_WORKER_SUMMARY = `
             subrequests
             requests
             errors
+            wallTime
+            cpuTimeUs
           }
           quantiles {
             cpuTimeP50

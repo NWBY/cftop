@@ -213,6 +213,8 @@ export class CloudflareAPI {
                     statusBreakdown: {},
                     requestDurationP50: 0,
                     requestDurationP99: 0,
+                    wallTime: 0,
+                    cpuTimeUs: 0,
                 });
             }
 
@@ -224,7 +226,8 @@ export class CloudflareAPI {
             summary.cpuTimeP99 = Math.max(summary.cpuTimeP99, worker.quantiles.cpuTimeP99 || 0);
             summary.requestDurationP50 = Math.max(summary.requestDurationP50, worker.quantiles.requestDurationP50 || 0);
             summary.requestDurationP99 = Math.max(summary.requestDurationP99, worker.quantiles.requestDurationP99 || 0);
-
+            summary.wallTime += worker.sum.wallTime || 0;
+            summary.cpuTimeUs += worker.sum.cpuTimeUs || 0;
             const status = worker.dimensions.status || 'unknown';
             summary.statusBreakdown[status] = (summary.statusBreakdown[status] || 0) + (worker.sum.requests || 0);
         }

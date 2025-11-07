@@ -10,6 +10,8 @@ export interface WorkersAnalyticsResponse {
                     subrequests: number;
                     requests: number;
                     errors: number;
+                    wallTime: number;
+                    cpuTimeUs: number;
                 };
                 quantiles: {
                     cpuTimeP50: number;
@@ -80,6 +82,8 @@ export interface WorkerSummary {
     totalSubrequests: number;
     cpuTimeP50: number;
     cpuTimeP99: number;
+    wallTime: number;
+    cpuTimeUs: number;
     statusBreakdown: Record<string, number>;
     requestDurationP50: number;
     requestDurationP99: number;

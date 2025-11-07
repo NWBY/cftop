@@ -9,7 +9,12 @@ import DomainsBox from "../components/domains-box";
 function HomeView({ metrics, workers, durableObjects, r2Buckets, domains, focussedItem, focussedSection }: { metrics: WorkerSummary[], workers: Script[], durableObjects: DurableObject[], r2Buckets: Bucket[], domains: Domain[], focussedItem: string, focussedSection: string }) {
     return (
         <box>
-            <box borderStyle="single" width="100%" flexDirection="row">
+            <box borderStyle="single" width="100%" flexDirection="row" flexWrap="wrap">
+                <box width="100%">
+                    <text paddingBottom={1}>
+                        <strong>Workers Summary (Last 24 hours)</strong>
+                    </text>
+                </box>
                 <box width="25%">
                     <text paddingBottom={1}>
                         <u>Requests</u>
@@ -24,6 +29,22 @@ function HomeView({ metrics, workers, durableObjects, r2Buckets, domains, focuss
                     </text>
                     <text>
                         {metrics.reduce((acc, metric) => acc + metric.totalErrors, 0)}
+                    </text>
+                </box>
+                <box width="25%">
+                    <text paddingBottom={1}>
+                        <u>Wall Time</u>
+                    </text>
+                    <text>
+                        {metrics.reduce((acc, metric) => acc + metric.wallTime, 0)}
+                    </text>
+                </box>
+                <box width="25%">
+                    <text paddingBottom={1}>
+                        <u>CPU Time (us)</u>
+                    </text>
+                    <text>
+                        {metrics.reduce((acc, metric) => acc + metric.cpuTimeUs, 0)}
                     </text>
                 </box>
             </box>

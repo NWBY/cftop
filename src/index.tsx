@@ -317,6 +317,10 @@ if (positionals.length == 2) {
         case 'version':
             console.log(packageJson.version);
             process.exit(0);
+        case 'config':
+            const configResult = await getConfig();
+            console.log(JSON.stringify(configResult, null, 2));
+            process.exit(0);
         default:
             console.error(`Unknown command: ${cmd}`);
             process.exit(1);

@@ -8,7 +8,7 @@ import DomainsBox from "../components/domains-box";
 
 function HomeView({ metrics, workers, durableObjects, r2Buckets, domains, focussedItem, focussedSection }: { metrics: WorkerSummary[], workers: Script[], durableObjects: DurableObject[], r2Buckets: Bucket[], domains: Domain[], focussedItem: string, focussedSection: string }) {
     return (
-        <box>
+        <box flexGrow={1} flexShrink={1} minHeight={0}>
             <box borderStyle="single" width="100%" flexDirection="row" flexWrap="wrap">
                 <box width="100%">
                     <text paddingBottom={1}>

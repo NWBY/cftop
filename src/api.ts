@@ -21,6 +21,7 @@ import {
     LIST_WORKERS,
     LIST_DURABLE_OBJECTS,
     GET_WORKER_SUMMARY,
+    GET_SINGLE_WORKER_SUMMARY,
 } from './queries';
 import { getConfig } from './config';
 
@@ -233,6 +234,54 @@ export class CloudflareAPI {
         }
 
         return Array.from(summaries.values());
+    }
+
+    /**
+     * Get summary metrics for a single worker
+     */
+    async getSingleWorkerSummary(
+        scriptName: string,
+        datetimeStart: string,
+        datetimeEnd: string
+    ): Promise<WorkerSummary | null> {
+        let response: GraphQLResponse<WorkersAnalyticsResponse> | null = null;
+        try {
+            response = await this.query<WorkersAnalyticsResponse>(
+                GET_SINGLE_WORKER_SUMMARY,
+                {
+                    datetimeStart,
+                    datetimeEnd,
+                    scriptName,
+                }
+            );
+        } catch (error) {
+            console.error('Error getting worker summary:', error);
+            return null;
+        }
+
+        const accounts = response.data.viewer.accounts;
+        if (accounts.length === 0 || !accounts[0]) {
+            return null;
+        }
+
+        const worker = accounts[0].workersInvocationsAdaptive[0];
+        if (!worker) {
+            return null;
+        }
+
+        return {
+            scriptName,
+            totalRequests: worker.sum.requests || 0,
+            totalErrors: worker.sum.errors || 0,
+            totalSubrequests: worker.sum.subrequests || 0,
+            cpuTimeP50: worker.quantiles.cpuTimeP50 || 0,
+            cpuTimeP99: worker.quantiles.cpuTimeP99 || 0,
+            wallTime: worker.sum.wallTime || 0,
+            cpuTimeUs: worker.sum.cpuTimeUs || 0,
+            requestDurationP50: worker.quantiles.requestDurationP50 || 0,
+            requestDurationP99: worker.quantiles.requestDurationP99 || 0,
+            statusBreakdown: {},
+        };
     }
 
     /**

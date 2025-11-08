@@ -118,11 +118,9 @@ if (positionals.length == 2) {
                     const nowTimestamp = Date.now();
                     const fromTimestamp = lastSuccessfulFocussedItemLogsTimestampRef.current;
                     const currentFocussedItem = focussedItemRef.current;
-                    console.log(`fetching focussed item logs for ${currentFocussedItem} from ${fromTimestamp} to ${nowTimestamp}`);
 
                     runObservabilityQuery(currentFocussedItem, { from: fromTimestamp, to: nowTimestamp }).then((response) => {
                         if (response && Array.isArray(response) && response.length > 0) {
-                            console.log(`Received ${response.length} new logs`);
                             setFocussedItemLogs((prevLogs) => {
                                 const updated = [...response, ...prevLogs];
                                 return updated;
@@ -130,7 +128,6 @@ if (positionals.length == 2) {
                             // Only update timestamp after successful fetch
                             lastSuccessfulFocussedItemLogsTimestampRef.current = nowTimestamp;
                         } else {
-                            console.log('No new logs received or response was not an array');
                             // Still update timestamp to avoid fetching the same time range again
                             // lastFocussedItemLogsTimestampRef.current = nowTimestamp;
                         }
@@ -234,7 +231,7 @@ if (positionals.length == 2) {
         }
 
         return (
-            <box>
+            <box height="100%">
                 <box borderStyle="single" flexShrink={0}>
                     <ascii-font font="tiny" text="cftop" />
                 </box>

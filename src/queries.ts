@@ -151,3 +151,42 @@ export const GET_WORKER_SUMMARY = `
   }
 `;
 
+export const GET_SINGLE_WORKER_SUMMARY = `
+  query GetSingleWorkerSummary(
+    $accountTag: string!
+    $scriptName: string!
+    $datetimeStart: Time
+    $datetimeEnd: Time
+  ) {
+    viewer {
+      accounts(filter: {accountTag: $accountTag}) {
+        workersInvocationsAdaptive(
+          limit: 1000
+          filter: {
+            datetime_geq: $datetimeStart
+            datetime_leq: $datetimeEnd
+            scriptName: $scriptName
+          }
+        ) {
+          sum {
+            subrequests
+            requests
+            errors
+            wallTime
+            cpuTimeUs
+          }
+          quantiles {
+            cpuTimeP50
+            cpuTimeP99
+            requestDurationP50
+            requestDurationP99
+          }
+          dimensions {
+            scriptName
+            status
+          }
+        }
+      }
+    }
+  }
+`;

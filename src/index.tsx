@@ -16,6 +16,7 @@ import SingleWorkerView from "./views/workers/single";
 import HomeView from "./views/home";
 import Keybindings from "./components/keybindings";
 import type { Bucket } from "cloudflare/resources/r2.mjs";
+import SingleR2BucketView from "./views/r2/single";
 
 const { values, positionals } = parseArgs({
     args: Bun.argv,
@@ -27,6 +28,14 @@ const { values, positionals } = parseArgs({
         accountId: {
             type: 'string',
             short: 'a',
+        },
+        accessKey: {
+            type: 'string',
+            default: undefined,
+        },
+        secretKey: {
+            type: 'string',
+            default: undefined,
         },
     },
     strict: true,
@@ -43,7 +52,7 @@ if (positionals.length == 2) {
 
     // user has just called cftop
     function App() {
-        const views = ['home', 'single-worker'];
+        const views = ['home', 'single-worker', 'single-r2-bucket'];
         const panels = ['workers', 'durables', 'buckets', 'config']
         const renderer = useRenderer()
         const [view, setView] = useState<string>("home");
@@ -171,6 +180,7 @@ if (positionals.length == 2) {
             }
             if (key.name === 'b') {
                 setFocussedSection('buckets');
+                setFocussedItem(r2Buckets[0]?.name || '');
             }
             if (key.name === 'c') {
                 setFocussedSection('config');
@@ -187,6 +197,10 @@ if (positionals.length == 2) {
                         const currentIndex = workers.findIndex(w => w.id === focussedItem);
                         const prevIndex = currentIndex <= 0 ? workers.length - 1 : currentIndex - 1;
                         setFocussedItem(workers[prevIndex]?.id || '');
+                    } else if (focussedSection === 'buckets') {
+                        const currentIndex = r2Buckets.findIndex(b => b.name === focussedItem);
+                        const prevIndex = currentIndex <= 0 ? r2Buckets.length - 1 : currentIndex - 1;
+                        setFocussedItem(r2Buckets[prevIndex]?.name || '');
                     } else {
                         setFocussedItem('');
                     }
@@ -198,6 +212,10 @@ if (positionals.length == 2) {
                         const currentIndex = workers.findIndex(w => w.id === focussedItem);
                         const nextIndex = (currentIndex + 1) % workers.length;
                         setFocussedItem(workers[nextIndex]?.id || '');
+                    } else if (focussedSection === 'buckets') {
+                        const currentIndex = r2Buckets.findIndex(b => b.name === focussedItem);
+                        const nextIndex = (currentIndex + 1) % r2Buckets.length;
+                        setFocussedItem(r2Buckets[nextIndex]?.name || '');
                     } else {
                         setFocussedItem('');
                     }
@@ -218,6 +236,11 @@ if (positionals.length == 2) {
                         setShowFocussedItemLogs(true);
                         setView('single-worker');
                     }
+                } else if (focussedSection === 'buckets') {
+                    const bucket = r2Buckets.find(b => b.name === focussedItem);
+                    if (bucket) {
+                        setView('single-r2-bucket');
+                    }
                 }
             }
         })
@@ -228,6 +251,8 @@ if (positionals.length == 2) {
             visibleView = <HomeView metrics={metrics} workers={workers} durableObjects={durableObjects} r2Buckets={r2Buckets} domains={domains} focussedItem={focussedItem} focussedSection={focussedSection} />
         } else if (view === 'single-worker') {
             visibleView = <SingleWorkerView focussedItemLogs={focussedItemLogs} focussedItem={focussedItem} />
+        } else if (view === 'single-r2-bucket') {
+            visibleView = <SingleR2BucketView focussedItem={focussedItem} />
         }
 
         return (
@@ -275,7 +300,7 @@ if (positionals.length == 2) {
                 process.exit(1);
             }
 
-            await createConfig(values.apiToken, values.accountId);
+            await createConfig(values.apiToken, values.accountId, values.accessKey, values.secretKey);
             console.log('Config created successfully');
             process.exit(0);
         case 'test-observability':

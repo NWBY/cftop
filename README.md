@@ -34,6 +34,14 @@ Once you've got your account ID and API token you need to initialise the config 
 cftop init --apiToken=<api-token> --accountId=<acccount-id>
 ```
 
+### R2 explorer setup
+
+If you want to be able to view the contents of a R2 bucket then you will need to create an R2 API token which has read access to all your buckets and pass in the Access Key ID and Secret Access Key like this:
+
+```
+cftop init --apiToken=<api-token> --accountId=<acccount-id> --accessKey=<access-key-id> --secretKey=<secret-access-key>
+```
+
 Once initialisation is complete you can run: `cftop`
 
 ## Keybindings

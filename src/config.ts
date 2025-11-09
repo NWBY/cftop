@@ -8,7 +8,7 @@ export const configExists = async (): Promise<boolean> => {
     return await file.exists();
 }
 
-export const createConfig = async (apiToken: string, accountId: string): Promise<void> => {
+export const createConfig = async (apiToken: string, accountId: string, accessKey?: string, secretKey?: string): Promise<void> => {
     const homeDir = homedir();
     const configPath = `${homeDir}/.cftop.json`;
     const file = Bun.file(configPath);
@@ -16,10 +16,12 @@ export const createConfig = async (apiToken: string, accountId: string): Promise
     await file.write(JSON.stringify({
         apiToken: apiToken,
         accountId: accountId,
+        accessKey: accessKey,
+        secretKey: secretKey,
     }, null, 2));
 }
 
-export const getConfig = async (): Promise<{ apiToken: string, accountId: string }> => {
+export const getConfig = async (): Promise<{ apiToken: string, accountId: string, accessKey?: string, secretKey?: string }> => {
     const homeDir = homedir();
     const configPath = `${homeDir}/.cftop.json`;
     const file = Bun.file(configPath);
@@ -27,5 +29,7 @@ export const getConfig = async (): Promise<{ apiToken: string, accountId: string
     return {
         apiToken: config.apiToken,
         accountId: config.accountId,
+        accessKey: config.accessKey,
+        secretKey: config.secretKey,
     };
 }

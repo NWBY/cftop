@@ -35,3 +35,17 @@ cftop init --apiToken=<api-token> --accountId=<acccount-id>
 ```
 
 Once initialisation is complete you can run: `cftop`
+
+## Keybindings
+
+| Key     | Action                                                          |
+| ------- | --------------------------------------------------------------- |
+| `q`     | Quit cftop                                                      |
+| `h`     | Go to the home view (default view)                              |
+| `w`     | Focus on the workers box                                        |
+| `d`     | Focus on the durable objects box                                |
+| `b`     | Focus on the R2 buckets box                                     |
+| `tab`   | Switch focus to next box                                        |
+| `up`    | Select previous item in list                                    |
+| `down`  | Select next item in list                                        |
+| `enter` | Select to view details (only for viewing Worker and R2 details) |

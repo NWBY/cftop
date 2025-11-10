@@ -5,8 +5,10 @@ import type { WorkerSummary } from "../types";
 import WorkersBox from "../components/workers-box";
 import R2Box from "../components/r2-box";
 import DomainsBox from "../components/domains-box";
+import QueuesBox from "../components/queues-box";
+import type { Queue } from "cloudflare/resources/queues/queues.mjs";
 
-function HomeView({ metrics, workers, durableObjects, r2Buckets, domains, focussedItem, focussedSection }: { metrics: WorkerSummary[], workers: Script[], durableObjects: DurableObject[], r2Buckets: Bucket[], domains: Domain[], focussedItem: string, focussedSection: string }) {
+function HomeView({ metrics, workers, durableObjects, r2Buckets, domains, queues, focussedItem, focussedSection }: { metrics: WorkerSummary[], workers: Script[], durableObjects: DurableObject[], r2Buckets: Bucket[], domains: Domain[], queues: Queue[], focussedItem: string, focussedSection: string }) {
     return (
         <box flexGrow={1} flexShrink={1} minHeight={0}>
             <box borderStyle="single" width="100%" flexDirection="row" flexWrap="wrap">
@@ -70,6 +72,9 @@ function HomeView({ metrics, workers, durableObjects, r2Buckets, domains, focuss
                 </box>
                 <R2Box r2Buckets={r2Buckets} focussedItem={focussedItem} focussedSection={focussedSection} />
                 <DomainsBox domains={domains} focussedItem={focussedItem} focussedSection={focussedSection} />
+            </box>
+            <box flexDirection="row">
+                <QueuesBox queues={queues} focussedItem={focussedItem} focussedSection={focussedSection} />
             </box>
         </box>
     );

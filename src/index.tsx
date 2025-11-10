@@ -4,7 +4,7 @@ import { render, useKeyboard, useRenderer } from "@opentui/react";
 import { parseArgs } from 'util';
 import { configExists, createConfig, getConfig } from "./config";
 import packageJson from "../package.json";
-import { getDomains, getDurableObjects, getR2Buckets, getWorkers, runObservabilityQuery } from "./cf";
+import { getDomains, getDurableObjects, getQueues, getR2Buckets, getWorkers, runObservabilityQuery } from "./cf";
 import { useEffect, useState, useRef } from "react";
 import type { Domain, Script } from "cloudflare/resources/workers.mjs";
 import { CloudflareAPI } from "./api";
@@ -17,6 +17,7 @@ import HomeView from "./views/home";
 import Keybindings from "./components/keybindings";
 import type { Bucket } from "cloudflare/resources/r2.mjs";
 import SingleR2BucketView from "./views/r2/single";
+import type { Queue } from "cloudflare/resources/queues/queues.mjs";
 
 const { values, positionals } = parseArgs({
     args: Bun.argv,
@@ -60,6 +61,7 @@ if (positionals.length == 2) {
         const [durableObjects, setDurableObjects] = useState<{ namespace: string, objects: DurableObject[] | undefined }[]>([]);
         const [r2Buckets, setR2Buckets] = useState<Bucket[]>([]);
         const [domains, setDomains] = useState<Domain[]>([]);
+        const [queues, setQueues] = useState<Queue[]>([]);
         const [focussedSection, setFocussedSection] = useState<string>("workers");
         const [focussedItem, setFocussedItem] = useState<string>("");
         const [showFocussedItemLogs, setShowFocussedItemLogs] = useState<boolean>(false);
@@ -108,6 +110,10 @@ if (positionals.length == 2) {
                     (async () => {
                         const domains = await getDomains();
                         setDomains(domains || []);
+                    })(),
+                    (async () => {
+                        const queues = await getQueues();
+                        setQueues(queues || []);
                     })(),
                 ]);
                 setLoading(false);
@@ -248,7 +254,7 @@ if (positionals.length == 2) {
         let visibleView: React.ReactNode;
 
         if (view === 'home') {
-            visibleView = <HomeView metrics={metrics} workers={workers} durableObjects={durableObjects} r2Buckets={r2Buckets} domains={domains} focussedItem={focussedItem} focussedSection={focussedSection} />
+            visibleView = <HomeView metrics={metrics} workers={workers} durableObjects={durableObjects} r2Buckets={r2Buckets} domains={domains} queues={queues} focussedItem={focussedItem} focussedSection={focussedSection} />
         } else if (view === 'single-worker') {
             visibleView = <SingleWorkerView focussedItemLogs={focussedItemLogs} focussedItem={focussedItem} />
         } else if (view === 'single-r2-bucket') {

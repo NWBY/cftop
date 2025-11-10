@@ -2,6 +2,7 @@ import Cloudflare from 'cloudflare';
 import { getConfig } from './config';
 import type { Domain, Script } from 'cloudflare/resources/workers.mjs';
 import type { Bucket } from 'cloudflare/resources/r2.mjs';
+import type { Queue } from 'cloudflare/resources/queues/queues.mjs';
 
 export const getWorkers = async (): Promise<Script[]> => {
     try {
@@ -76,6 +77,22 @@ export const getDomains = async (): Promise<Domain[] | undefined> => {
             apiToken: apiToken,
         });
         const res = await client.workers.domains.list({
+            account_id: accountId,
+        });
+        return res.result;
+    } catch (error) {
+        console.error(error);
+        return [];
+    }
+}
+export const getQueues = async (): Promise<Queue[] | undefined> => {
+    try {
+        const { apiToken, accountId } = await getConfig();
+
+        const client = new Cloudflare({
+            apiToken: apiToken,
+        });
+        const res = await client.queues.list({
             account_id: accountId,
         });
         return res.result;

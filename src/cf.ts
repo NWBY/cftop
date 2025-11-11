@@ -3,6 +3,7 @@ import { getConfig } from './config';
 import type { Domain, Script } from 'cloudflare/resources/workers.mjs';
 import type { Bucket } from 'cloudflare/resources/r2.mjs';
 import type { Queue } from 'cloudflare/resources/queues/queues.mjs';
+import type { Database, DatabaseListResponse } from 'cloudflare/resources/d1.mjs';
 
 export const getWorkers = async (): Promise<Script[]> => {
     try {
@@ -99,6 +100,40 @@ export const getQueues = async (): Promise<Queue[] | undefined> => {
     } catch (error) {
         console.error(error);
         return [];
+    }
+}
+
+export const getD1Databases = async (): Promise<DatabaseListResponse[] | undefined> => {
+    try {
+        const { apiToken, accountId } = await getConfig();
+        const client = new Cloudflare({
+            apiToken: apiToken,
+        });
+        const res = await client.d1.database.list({
+            account_id: accountId,
+        });
+        return res.result;
+    } catch (error) {
+        console.error(error);
+        return [];
+    }
+}
+
+export const queryD1Database = async (databaseId: string, query: string): Promise<any> => {
+    try {
+        const { apiToken, accountId } = await getConfig();
+        const client = new Cloudflare({
+            apiToken: apiToken,
+        });
+        const res = await client.d1.database.query(databaseId, {
+            account_id: accountId,
+            sql: query,
+        });
+
+        return res;
+    } catch (error) {
+        console.error(error);
+        return null;
     }
 }
 

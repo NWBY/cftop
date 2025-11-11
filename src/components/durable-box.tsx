@@ -15,7 +15,7 @@ function DurableBox({ durableObjects, focussedItem, focussedSection }: { durable
                     ))
                 ))
             ) : (
-                <box paddingTop={1}>
+                <box>
                     <text>No durable objects found</text>
                 </box>
             )}

@@ -4,7 +4,7 @@ import { render, useKeyboard, useRenderer } from "@opentui/react";
 import { parseArgs } from 'util';
 import { configExists, createConfig, getConfig } from "./config";
 import packageJson from "../package.json";
-import { getDomains, getDurableObjects, getQueues, getR2Buckets, getWorkers, runObservabilityQuery } from "./cf";
+import { getD1Databases, getDomains, getDurableObjects, getQueues, getR2Buckets, getWorkers, runObservabilityQuery } from "./cf";
 import { useEffect, useState, useRef } from "react";
 import type { Domain, Script } from "cloudflare/resources/workers.mjs";
 import { CloudflareAPI } from "./api";
@@ -18,6 +18,8 @@ import Keybindings from "./components/keybindings";
 import type { Bucket } from "cloudflare/resources/r2.mjs";
 import SingleR2BucketView from "./views/r2/single";
 import type { Queue } from "cloudflare/resources/queues/queues.mjs";
+import type { DatabaseListResponse } from "cloudflare/resources/d1.mjs";
+import SingleD1DatabaseView from "./views/d1/single";
 
 const { values, positionals } = parseArgs({
     args: Bun.argv,
@@ -53,8 +55,8 @@ if (positionals.length == 2) {
 
     // user has just called cftop
     function App() {
-        const views = ['home', 'single-worker', 'single-r2-bucket'];
-        const panels = ['workers', 'durables', 'buckets', 'config']
+        const views = ['home', 'single-worker', 'single-r2-bucket', 'single-d1-database'];
+        const panels = ['workers', 'durables', 'buckets', 'domains', 'queues', 'd1'];
         const renderer = useRenderer()
         const [view, setView] = useState<string>("home");
         const [workers, setWorkers] = useState<Script[]>([]);
@@ -62,6 +64,7 @@ if (positionals.length == 2) {
         const [r2Buckets, setR2Buckets] = useState<Bucket[]>([]);
         const [domains, setDomains] = useState<Domain[]>([]);
         const [queues, setQueues] = useState<Queue[]>([]);
+        const [d1Databases, setD1Databases] = useState<DatabaseListResponse[]>([]);
         const [focussedSection, setFocussedSection] = useState<string>("workers");
         const [focussedItem, setFocussedItem] = useState<string>("");
         const [showFocussedItemLogs, setShowFocussedItemLogs] = useState<boolean>(false);
@@ -114,6 +117,10 @@ if (positionals.length == 2) {
                     (async () => {
                         const queues = await getQueues();
                         setQueues(queues || []);
+                    })(),
+                    (async () => {
+                        const d1Databases = await getD1Databases();
+                        setD1Databases(d1Databases || []);
                     })(),
                 ]);
                 setLoading(false);
@@ -207,6 +214,13 @@ if (positionals.length == 2) {
                         const currentIndex = r2Buckets.findIndex(b => b.name === focussedItem);
                         const prevIndex = currentIndex <= 0 ? r2Buckets.length - 1 : currentIndex - 1;
                         setFocussedItem(r2Buckets[prevIndex]?.name || '');
+                    } else if (focussedSection === 'd1') {
+                        const currentIndex = d1Databases.findIndex(d => d.uuid === focussedItem);
+                        console.log(currentIndex);
+                        const prevIndex = currentIndex <= 0 ? d1Databases.length - 1 : currentIndex - 1;
+                        console.log(prevIndex);
+                        console.log(d1Databases[prevIndex]?.uuid);
+                        setFocussedItem(d1Databases[prevIndex]?.uuid || '');
                     } else {
                         setFocussedItem('');
                     }
@@ -222,6 +236,10 @@ if (positionals.length == 2) {
                         const currentIndex = r2Buckets.findIndex(b => b.name === focussedItem);
                         const nextIndex = (currentIndex + 1) % r2Buckets.length;
                         setFocussedItem(r2Buckets[nextIndex]?.name || '');
+                    } else if (focussedSection === 'd1') {
+                        const currentIndex = d1Databases.findIndex(d => d.uuid === focussedItem);
+                        const nextIndex = (currentIndex + 1) % d1Databases.length;
+                        setFocussedItem(d1Databases[nextIndex]?.uuid || '');
                     } else {
                         setFocussedItem('');
                     }
@@ -247,6 +265,11 @@ if (positionals.length == 2) {
                     if (bucket) {
                         setView('single-r2-bucket');
                     }
+                } else if (focussedSection === 'd1') {
+                    const database = d1Databases.find(d => d.uuid === focussedItem);
+                    if (database) {
+                        setView('single-d1-database');
+                    }
                 }
             }
         })
@@ -254,11 +277,13 @@ if (positionals.length == 2) {
         let visibleView: React.ReactNode;
 
         if (view === 'home') {
-            visibleView = <HomeView metrics={metrics} workers={workers} durableObjects={durableObjects} r2Buckets={r2Buckets} domains={domains} queues={queues} focussedItem={focussedItem} focussedSection={focussedSection} />
+            visibleView = <HomeView metrics={metrics} workers={workers} durableObjects={durableObjects} r2Buckets={r2Buckets} domains={domains} queues={queues} d1Databases={d1Databases} focussedItem={focussedItem} focussedSection={focussedSection} />
         } else if (view === 'single-worker') {
             visibleView = <SingleWorkerView focussedItemLogs={focussedItemLogs} focussedItem={focussedItem} />
         } else if (view === 'single-r2-bucket') {
             visibleView = <SingleR2BucketView focussedItem={focussedItem} />
+        } else if (view === 'single-d1-database') {
+            visibleView = <SingleD1DatabaseView focussedItem={focussedItem} />
         }
 
         return (

@@ -7,8 +7,10 @@ import R2Box from "../components/r2-box";
 import DomainsBox from "../components/domains-box";
 import QueuesBox from "../components/queues-box";
 import type { Queue } from "cloudflare/resources/queues/queues.mjs";
+import D1Box from "../components/d1-box";
+import type { DatabaseListResponse } from "cloudflare/resources/d1.mjs";
 
-function HomeView({ metrics, workers, durableObjects, r2Buckets, domains, queues, focussedItem, focussedSection }: { metrics: WorkerSummary[], workers: Script[], durableObjects: DurableObject[], r2Buckets: Bucket[], domains: Domain[], queues: Queue[], focussedItem: string, focussedSection: string }) {
+function HomeView({ metrics, workers, durableObjects, r2Buckets, domains, queues, d1Databases, focussedItem, focussedSection }: { metrics: WorkerSummary[], workers: Script[], durableObjects: DurableObject[], r2Buckets: Bucket[], domains: Domain[], queues: Queue[], d1Databases: DatabaseListResponse[], focussedItem: string, focussedSection: string }) {
     return (
         <box flexGrow={1} flexShrink={1} minHeight={0}>
             <box borderStyle="single" width="100%" flexDirection="row" flexWrap="wrap">
@@ -75,6 +77,7 @@ function HomeView({ metrics, workers, durableObjects, r2Buckets, domains, queues
             </box>
             <box flexDirection="row">
                 <QueuesBox queues={queues} focussedItem={focussedItem} focussedSection={focussedSection} />
+                <D1Box d1Databases={d1Databases} focussedSection={focussedSection} focussedItem={focussedItem} />
             </box>
         </box>
     );

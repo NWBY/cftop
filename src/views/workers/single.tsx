@@ -25,7 +25,15 @@ function SingleWorkerView({ focussedItemLogs, focussedItem }: { focussedItemLogs
     return (
         <box flexGrow={1} flexShrink={1} minHeight={0}>
             <SingleMetrics metrics={metrics} />
-            <scrollbox borderStyle="single" width="100%" focused flexGrow={1} flexShrink={1} minHeight={0} style={{ borderColor: 'orange' }}>
+            <scrollbox
+                borderStyle="single"
+                width="100%"
+                focused
+                flexGrow={1}
+                flexShrink={1}
+                minHeight={0}
+                style={{ borderColor: 'orange' }}
+            >
                 <box width="100%">
                     <text>
                         <strong><u>{focussedItem} events ({logCount} total)</u></strong>

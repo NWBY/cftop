@@ -2,6 +2,8 @@
 
 Terminal UI for viewing and monitoring Cloudflare Workers (and related tools) from your terminal
 
+![cftop](/assets/screenshot.png)
+
 ## Installation
 
 Install via the shell script:

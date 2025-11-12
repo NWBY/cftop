@@ -21,6 +21,7 @@ import type { Queue } from "cloudflare/resources/queues/queues.mjs";
 import type { DatabaseListResponse } from "cloudflare/resources/d1.mjs";
 import SingleD1DatabaseView from "./views/d1/single";
 import SingleQueueView from "./views/queues/single";
+import { CheckForUpdate } from "./components/utils/check-for-update";
 
 const { values, positionals } = parseArgs({
     args: Bun.argv,
@@ -312,7 +313,10 @@ if (positionals.length == 2) {
             <box height="100%">
                 <box borderStyle="single" flexShrink={0} flexDirection="row" justifyContent="space-between" alignItems="center">
                     <ascii-font font="tiny" text="cftop" />
-                    <text>v{packageJson.version}</text>
+                    <box flexDirection="row" alignItems="center">
+                        <CheckForUpdate />
+                        <text>v{packageJson.version}</text>
+                    </box>
                 </box>
                 {loading ? (
                     <box borderStyle="single" flexGrow={1}>

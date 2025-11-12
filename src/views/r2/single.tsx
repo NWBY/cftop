@@ -40,7 +40,7 @@ function SingleR2BucketView({ focussedItem }: { focussedItem: string }) {
             <box borderStyle="single">
                 <text><strong>{focussedItem} objects</strong></text>
             </box>
-            <scrollbox borderStyle="single" borderColor="orange" width="100%" focused flexGrow={1} flexShrink={1} minHeight={0} style={{ wrapperOptions: { borderColor: 'orange' } }}>
+            <scrollbox borderStyle="single" borderColor="orange" width="100%" flexGrow={1} flexShrink={1} minHeight={0} style={{ wrapperOptions: { borderColor: 'orange' }, rootOptions: { borderColor: 'orange' }, contentOptions: { borderColor: 'orange' } }} focused>
                 <box width="100%">
                     {/* @ts-ignore */}
                     {objects && objects.length > 0 ? (

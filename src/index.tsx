@@ -20,6 +20,7 @@ import SingleR2BucketView from "./views/r2/single";
 import type { Queue } from "cloudflare/resources/queues/queues.mjs";
 import type { DatabaseListResponse } from "cloudflare/resources/d1.mjs";
 import SingleD1DatabaseView from "./views/d1/single";
+import SingleQueueView from "./views/queues/single";
 
 const { values, positionals } = parseArgs({
     args: Bun.argv,
@@ -55,7 +56,7 @@ if (positionals.length == 2) {
 
     // user has just called cftop
     function App() {
-        const views = ['home', 'single-worker', 'single-r2-bucket', 'single-d1-database'];
+        const views = ['home', 'single-worker', 'single-r2-bucket', 'single-d1-database', 'single-queue'];
         const panels = ['workers', 'durables', 'buckets', 'domains', 'queues', 'd1'];
         const renderer = useRenderer()
         const [view, setView] = useState<string>("home");
@@ -221,6 +222,10 @@ if (positionals.length == 2) {
                         console.log(prevIndex);
                         console.log(d1Databases[prevIndex]?.uuid);
                         setFocussedItem(d1Databases[prevIndex]?.uuid || '');
+                    } else if (focussedSection === 'queues') {
+                        const currentIndex = queues.findIndex(q => q.queue_id === focussedItem);
+                        const prevIndex = currentIndex <= 0 ? queues.length - 1 : currentIndex - 1;
+                        setFocussedItem(queues[prevIndex]?.queue_id || '');
                     } else {
                         setFocussedItem('');
                     }
@@ -240,6 +245,14 @@ if (positionals.length == 2) {
                         const currentIndex = d1Databases.findIndex(d => d.uuid === focussedItem);
                         const nextIndex = (currentIndex + 1) % d1Databases.length;
                         setFocussedItem(d1Databases[nextIndex]?.uuid || '');
+                    } else if (focussedSection === 'queues') {
+                        console.log('down in queues');
+                        const currentIndex = queues.findIndex(q => q.queue_id === focussedItem);
+                        console.log(`queues current index: ${currentIndex}`);
+                        const nextIndex = (currentIndex + 1) % queues.length;
+                        console.log(`queues next index: ${nextIndex}`);
+                        setFocussedItem(queues[nextIndex]?.queue_id || '');
+                        console.log(`queues focussed item: ${focussedItem}`);
                     } else {
                         setFocussedItem('');
                     }
@@ -270,9 +283,16 @@ if (positionals.length == 2) {
                     if (database) {
                         setView('single-d1-database');
                     }
+                } else if (focussedSection === 'queues') {
+                    const queue = queues.find(q => q.queue_id === focussedItem);
+                    if (queue) {
+                        setView('single-queue');
+                    }
                 }
             }
         })
+
+        const dbName = d1Databases.find(d => d.uuid === focussedItem)?.name || '';
 
         let visibleView: React.ReactNode;
 
@@ -283,13 +303,16 @@ if (positionals.length == 2) {
         } else if (view === 'single-r2-bucket') {
             visibleView = <SingleR2BucketView focussedItem={focussedItem} />
         } else if (view === 'single-d1-database') {
-            visibleView = <SingleD1DatabaseView focussedItem={focussedItem} />
+            visibleView = <SingleD1DatabaseView focussedItem={focussedItem} dbName={dbName} />
+        } else if (view === 'single-queue') {
+            visibleView = <SingleQueueView focussedItem={focussedItem} />
         }
 
         return (
             <box height="100%">
-                <box borderStyle="single" flexShrink={0}>
+                <box borderStyle="single" flexShrink={0} flexDirection="row" justifyContent="space-between" alignItems="center">
                     <ascii-font font="tiny" text="cftop" />
+                    <text>v{packageJson.version}</text>
                 </box>
                 {loading ? (
                     <box borderStyle="single" flexGrow={1}>

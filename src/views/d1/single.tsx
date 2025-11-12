@@ -1,15 +1,22 @@
 import SingleMetrics from "../../components/single-metrics";
 import { useEffect, useState } from "react";
 import type { WorkerSummary } from "../../types";
-import { getConfig } from "../../config";
-import { CloudflareAPI } from "../../api";
-import { S3Client } from "bun";
-import { queryD1Database } from "../../cf";
+import { getD1Database, queryD1Database } from "../../cf";
+import type { D1 } from "cloudflare/resources/d1/d1.mjs";
 
-function SingleD1DatabaseView({ focussedItem }: { focussedItem: string }) {
+function SingleD1DatabaseView({ focussedItem, dbName }: { focussedItem: string, dbName: string }) {
+    const [database, setDatabase] = useState<D1 | null>(null);
     const [tables, setTables] = useState<any[] | undefined>(undefined);
     const [fullTables, setFullTables] = useState<any[] | undefined>(undefined);
     const [metrics, setMetrics] = useState<WorkerSummary | null>(null);
+
+    useEffect(() => {
+        const fetchDatabase = async () => {
+            const database = await getD1Database(focussedItem);
+            setDatabase(database);
+        };
+        fetchDatabase();
+    }, [focussedItem]);
 
     useEffect(() => {
         const fetchDatabaseSchema = async () => {
@@ -49,8 +56,18 @@ function SingleD1DatabaseView({ focussedItem }: { focussedItem: string }) {
 
     return (
         <box flexGrow={1} flexShrink={1} minHeight={0}>
-            <box borderStyle="single">
-                <text><strong>{focussedItem}</strong></text>
+            <box borderStyle="single" flexShrink={0}>
+                <text><strong>{dbName}</strong></text>
+                <box flexDirection="row" paddingTop={0.5}>
+                    <box width="25%">
+                        <text><u>Size (bytes)</u></text>
+                        <text>{database?.file_size}</text>
+                    </box>
+                    <box width="25%">
+                        <text><u>Number of tables</u></text>
+                        <text>{database?.num_tables}</text>
+                    </box>
+                </box>
             </box>
             <scrollbox borderStyle="single" borderColor="orange" width="100%" focused flexGrow={1} flexShrink={1} minHeight={0} style={{ wrapperOptions: { borderColor: 'orange' } }}>
                 <box width="100%" flexDirection="row">

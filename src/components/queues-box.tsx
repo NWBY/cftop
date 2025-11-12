@@ -12,7 +12,7 @@ function QueuesBox({ queues, focussedItem, focussedSection }: { queues: Queue[],
             </text>
             {queues.length > 0 ? (
                 queues.map((queue) => (
-                    <text key={queue.queue_id}>
+                    <text key={queue.queue_id} bg={focussedItem === queue.queue_id ? 'orange' : 'transparent'}>
                         {queue.queue_name}
                     </text>
                 ))

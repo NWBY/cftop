@@ -4,6 +4,7 @@ import type { Domain, Script } from 'cloudflare/resources/workers.mjs';
 import type { Bucket } from 'cloudflare/resources/r2.mjs';
 import type { Queue } from 'cloudflare/resources/queues/queues.mjs';
 import type { Database, DatabaseListResponse } from 'cloudflare/resources/d1.mjs';
+import type { D1 } from 'cloudflare/resources/d1/d1.mjs';
 
 export const getWorkers = async (): Promise<Script[]> => {
     try {
@@ -103,6 +104,22 @@ export const getQueues = async (): Promise<Queue[] | undefined> => {
     }
 }
 
+export const getQueue = async (queueId: string): Promise<Queue | null> => {
+    try {
+        const { apiToken, accountId } = await getConfig();
+        const client = new Cloudflare({
+            apiToken: apiToken,
+        });
+        const res = await client.queues.get(queueId, {
+            account_id: accountId,
+        });
+        return res;
+    } catch (error) {
+        console.error(error);
+        return null;
+    }
+}
+
 export const getD1Databases = async (): Promise<DatabaseListResponse[] | undefined> => {
     try {
         const { apiToken, accountId } = await getConfig();
@@ -116,6 +133,22 @@ export const getD1Databases = async (): Promise<DatabaseListResponse[] | undefin
     } catch (error) {
         console.error(error);
         return [];
+    }
+}
+
+export const getD1Database = async (databaseId: string): Promise<D1 | null> => {
+    try {
+        const { apiToken, accountId } = await getConfig();
+        const client = new Cloudflare({
+            apiToken: apiToken,
+        });
+        const res = await client.d1.database.get(databaseId, {
+            account_id: accountId,
+        });
+        return res;
+    } catch (error) {
+        console.error(error);
+        return null;
     }
 }
 

@@ -9,8 +9,10 @@ import QueuesBox from "../components/queues-box";
 import type { Queue } from "cloudflare/resources/queues/queues.mjs";
 import D1Box from "../components/d1-box";
 import type { DatabaseListResponse } from "cloudflare/resources/d1.mjs";
+import KVBox from "../components/kv-box";
+import type { Namespace } from "cloudflare/src/resources/kv.js";
 
-function HomeView({ metrics, workers, durableObjects, r2Buckets, domains, queues, d1Databases, focussedItem, focussedSection }: { metrics: WorkerSummary[], workers: Script[], durableObjects: DurableObject[], r2Buckets: Bucket[], domains: Domain[], queues: Queue[], d1Databases: DatabaseListResponse[], focussedItem: string, focussedSection: string }) {
+function HomeView({ metrics, workers, durableObjects, r2Buckets, domains, queues, d1Databases, kvNamespaces, focussedItem, focussedSection }: { metrics: WorkerSummary[], workers: Script[], durableObjects: DurableObject[], r2Buckets: Bucket[], domains: Domain[], queues: Queue[], d1Databases: DatabaseListResponse[], kvNamespaces: Namespace[], focussedItem: string, focussedSection: string }) {
     return (
         <box flexGrow={1} flexShrink={1} minHeight={0}>
             <box borderStyle="single" width="100%" flexDirection="row" flexWrap="wrap">
@@ -78,6 +80,7 @@ function HomeView({ metrics, workers, durableObjects, r2Buckets, domains, queues
             <box flexDirection="row">
                 <QueuesBox queues={queues} focussedItem={focussedItem} focussedSection={focussedSection} />
                 <D1Box d1Databases={d1Databases} focussedSection={focussedSection} focussedItem={focussedItem} />
+                <KVBox kvNamespaces={kvNamespaces} focussedSection={focussedSection} focussedItem={focussedItem} />
             </box>
         </box>
     );

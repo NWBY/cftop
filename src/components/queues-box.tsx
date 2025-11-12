@@ -17,7 +17,7 @@ function QueuesBox({ queues, focussedItem, focussedSection }: { queues: Queue[],
                     </text>
                 ))
             ) : (
-                <box paddingTop={1}>
+                <box>
                     <text>No queues found</text>
                 </box>
             )}

@@ -30,6 +30,7 @@ To use `cftop` you will need two things:
    - Workers R2 Storage:Read
    - Workers Tail:Read
    - Workers Scripts:Read
+   - Workers KV Storage:Read
 
 Once you've got your account ID and API token you need to initialise the config file:
 

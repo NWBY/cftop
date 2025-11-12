@@ -17,7 +17,7 @@ function D1Box({ d1Databases, focussedSection, focussedItem }: { d1Databases: Da
                     </text>
                 ))
             ) : (
-                <box paddingTop={1}>
+                <box>
                     <text>No D1 databases found</text>
                 </box>
             )}

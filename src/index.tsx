@@ -223,6 +223,12 @@ if (positionals.length == 2) {
                 );
             }
 
+            if (key.name === "escape" || key.name === "esc") {
+                setFocussedSection("workers");
+                setFocussedItem("");
+                setView("home");
+            }
+
             if (key.name === "h") {
                 setFocussedSection("workers");
                 setFocussedItem("");

@@ -74,15 +74,7 @@ if (positionals.length == 2) {
             "single-d1-database",
             "single-queue",
         ];
-        const panels = [
-            "workers",
-            "durables",
-            "buckets",
-            "domains",
-            "queues",
-            "d1",
-            "kv",
-        ];
+        const panels = ["workers", "durables", "buckets", "domains", "queues", "d1", "kv"];
         const renderer = useRenderer();
         const [view, setView] = useState<string>("home");
         const [workers, setWorkers] = useState<Script[]>([]);
@@ -96,8 +88,7 @@ if (positionals.length == 2) {
         const [kvNamespaces, setKVNamespaces] = useState<Namespace[]>([]);
         const [focussedSection, setFocussedSection] = useState<string>("workers");
         const [focussedItem, setFocussedItem] = useState<string>("");
-        const [showFocussedItemLogs, setShowFocussedItemLogs] =
-            useState<boolean>(false);
+        const [showFocussedItemLogs, setShowFocussedItemLogs] = useState<boolean>(false);
         const [focussedItemLogs, setFocussedItemLogs] = useState<any[]>([]);
         const [metrics, setMetrics] = useState<WorkerSummary[]>([]);
         const [loading, setLoading] = useState<boolean>(false);
@@ -105,8 +96,7 @@ if (positionals.length == 2) {
         const { start, end } = CloudflareAPI.getTimeRange(24);
         const nowTimestamp = Date.now();
         const startTimestamp = nowTimestamp - 24 * 60 * 60 * 1000;
-        const lastSuccessfulFocussedItemLogsTimestampRef =
-            useRef<number>(startTimestamp);
+        const lastSuccessfulFocussedItemLogsTimestampRef = useRef<number>(startTimestamp);
         const focussedItemRef = useRef<string>(focussedItem);
 
         // Keep ref in sync with state
@@ -173,8 +163,7 @@ if (positionals.length == 2) {
 
                 const interval = setInterval(() => {
                     const nowTimestamp = Date.now();
-                    const fromTimestamp =
-                        lastSuccessfulFocussedItemLogsTimestampRef.current;
+                    const fromTimestamp = lastSuccessfulFocussedItemLogsTimestampRef.current;
                     const currentFocussedItem = focussedItemRef.current;
 
                     runObservabilityQuery(currentFocussedItem, {
@@ -188,8 +177,7 @@ if (positionals.length == 2) {
                                     return updated;
                                 });
                                 // Only update timestamp after successful fetch
-                                lastSuccessfulFocussedItemLogsTimestampRef.current =
-                                    nowTimestamp;
+                                lastSuccessfulFocussedItemLogsTimestampRef.current = nowTimestamp;
                             } else {
                                 // Still update timestamp to avoid fetching the same time range again
                                 // lastFocussedItemLogsTimestampRef.current = nowTimestamp;
@@ -217,9 +205,7 @@ if (positionals.length == 2) {
 
             if (key.name === "tab") {
                 setFocussedSection(
-                    panels[
-                    (panels.indexOf(focussedSection) + 1) % panels.length
-                    ] as string,
+                    panels[(panels.indexOf(focussedSection) + 1) % panels.length] as string,
                 );
             }
 
@@ -259,23 +245,16 @@ if (positionals.length == 2) {
             if (key.name === "up") {
                 if (view === "home") {
                     if (focussedSection === "workers") {
-                        const currentIndex = workers.findIndex(
-                            (w) => w.id === focussedItem,
-                        );
-                        const prevIndex =
-                            currentIndex <= 0 ? workers.length - 1 : currentIndex - 1;
+                        const currentIndex = workers.findIndex((w) => w.id === focussedItem);
+                        const prevIndex = currentIndex <= 0 ? workers.length - 1 : currentIndex - 1;
                         setFocussedItem(workers[prevIndex]?.id || "");
                     } else if (focussedSection === "buckets") {
-                        const currentIndex = r2Buckets.findIndex(
-                            (b) => b.name === focussedItem,
-                        );
+                        const currentIndex = r2Buckets.findIndex((b) => b.name === focussedItem);
                         const prevIndex =
                             currentIndex <= 0 ? r2Buckets.length - 1 : currentIndex - 1;
                         setFocussedItem(r2Buckets[prevIndex]?.name || "");
                     } else if (focussedSection === "d1") {
-                        const currentIndex = d1Databases.findIndex(
-                            (d) => d.uuid === focussedItem,
-                        );
+                        const currentIndex = d1Databases.findIndex((d) => d.uuid === focussedItem);
                         console.log(currentIndex);
                         const prevIndex =
                             currentIndex <= 0 ? d1Databases.length - 1 : currentIndex - 1;
@@ -283,11 +262,8 @@ if (positionals.length == 2) {
                         console.log(d1Databases[prevIndex]?.uuid);
                         setFocussedItem(d1Databases[prevIndex]?.uuid || "");
                     } else if (focussedSection === "queues") {
-                        const currentIndex = queues.findIndex(
-                            (q) => q.queue_id === focussedItem,
-                        );
-                        const prevIndex =
-                            currentIndex <= 0 ? queues.length - 1 : currentIndex - 1;
+                        const currentIndex = queues.findIndex((q) => q.queue_id === focussedItem);
+                        const prevIndex = currentIndex <= 0 ? queues.length - 1 : currentIndex - 1;
                         setFocussedItem(queues[prevIndex]?.queue_id || "");
                     } else {
                         setFocussedItem("");
@@ -297,28 +273,20 @@ if (positionals.length == 2) {
             if (key.name === "down") {
                 if (view === "home") {
                     if (focussedSection === "workers") {
-                        const currentIndex = workers.findIndex(
-                            (w) => w.id === focussedItem,
-                        );
+                        const currentIndex = workers.findIndex((w) => w.id === focussedItem);
                         const nextIndex = (currentIndex + 1) % workers.length;
                         setFocussedItem(workers[nextIndex]?.id || "");
                     } else if (focussedSection === "buckets") {
-                        const currentIndex = r2Buckets.findIndex(
-                            (b) => b.name === focussedItem,
-                        );
+                        const currentIndex = r2Buckets.findIndex((b) => b.name === focussedItem);
                         const nextIndex = (currentIndex + 1) % r2Buckets.length;
                         setFocussedItem(r2Buckets[nextIndex]?.name || "");
                     } else if (focussedSection === "d1") {
-                        const currentIndex = d1Databases.findIndex(
-                            (d) => d.uuid === focussedItem,
-                        );
+                        const currentIndex = d1Databases.findIndex((d) => d.uuid === focussedItem);
                         const nextIndex = (currentIndex + 1) % d1Databases.length;
                         setFocussedItem(d1Databases[nextIndex]?.uuid || "");
                     } else if (focussedSection === "queues") {
                         console.log("down in queues");
-                        const currentIndex = queues.findIndex(
-                            (q) => q.queue_id === focussedItem,
-                        );
+                        const currentIndex = queues.findIndex((q) => q.queue_id === focussedItem);
                         console.log(`queues current index: ${currentIndex}`);
                         const nextIndex = (currentIndex + 1) % queues.length;
                         console.log(`queues next index: ${nextIndex}`);
@@ -387,17 +355,12 @@ if (positionals.length == 2) {
             );
         } else if (view === "single-worker") {
             visibleView = (
-                <SingleWorkerView
-                    focussedItemLogs={focussedItemLogs}
-                    focussedItem={focussedItem}
-                />
+                <SingleWorkerView focussedItemLogs={focussedItemLogs} focussedItem={focussedItem} />
             );
         } else if (view === "single-r2-bucket") {
             visibleView = <SingleR2BucketView focussedItem={focussedItem} />;
         } else if (view === "single-d1-database") {
-            visibleView = (
-                <SingleD1DatabaseView focussedItem={focussedItem} dbName={dbName} />
-            );
+            visibleView = <SingleD1DatabaseView focussedItem={focussedItem} dbName={dbName} />;
         } else if (view === "single-queue") {
             visibleView = <SingleQueueView focussedItem={focussedItem} />;
         }
@@ -432,12 +395,16 @@ if (positionals.length == 2) {
     }
 
     render(<App />);
-} else if (positionals.length == 3) {
+} else if (positionals.length >= 3) {
     // user has called cftop with a command
     const cmd = positionals[2];
 
     switch (cmd) {
         case "init":
+            if (positionals.length > 3) {
+                console.error("Usage: cftop init --apiToken=<api-token> --accountId=<account-id>");
+                process.exit(1);
+            }
             // initialize the config
             const configExistsResult = await configExists();
             if (configExistsResult) {

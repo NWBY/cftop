@@ -441,12 +441,12 @@ if (positionals.length == 2) {
 
             // create the config
             if (!values.apiToken) {
-                console.error("API token is required");
+                console.error("Missing API token: use --apiToken=<api-token>");
                 process.exit(1);
             }
 
             if (!values.accountId) {
-                console.error("Account ID is required");
+                console.error("Missing account ID: use --accountId=<account-id>");
                 process.exit(1);
             }
 

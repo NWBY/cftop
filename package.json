@@ -1,23 +1,23 @@
 {
-  "name": "cftop",
-  "version": "0.1.4",
-  "module": "src/index.tsx",
-  "type": "module",
-  "private": true,
-  "scripts": {
-    "dev": "bun run --watch src/index.tsx"
-  },
-  "devDependencies": {
-    "@types/bun": "latest",
-    "prettier": "3.6.2"
-  },
-  "peerDependencies": {
-    "typescript": "^5"
-  },
-  "dependencies": {
-    "@opentui/core": "^0.1.30",
-    "@opentui/react": "^0.1.30",
-    "cloudflare": "^5.2.0",
-    "react": "^19.1.1"
-  }
+    "name": "cftop",
+    "version": "0.1.5",
+    "module": "src/index.tsx",
+    "type": "module",
+    "private": true,
+    "scripts": {
+        "dev": "bun run --watch src/index.tsx"
+    },
+    "devDependencies": {
+        "@types/bun": "latest",
+        "prettier": "3.6.2"
+    },
+    "peerDependencies": {
+        "typescript": "^5"
+    },
+    "dependencies": {
+        "@opentui/core": "^0.1.30",
+        "@opentui/react": "^0.1.30",
+        "cloudflare": "^5.2.0",
+        "react": "^19.1.1"
+    }
 }

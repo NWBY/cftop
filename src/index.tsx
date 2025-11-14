@@ -74,12 +74,25 @@ if (positionals.length == 2) {
             "single-d1-database",
             "single-queue",
         ];
-        const panels = ["workers", "durables", "buckets", "domains", "queues", "d1", "kv"];
+
+        const panels = [
+            "workers",
+            "durables",
+            "buckets",
+            "domains",
+            "queues",
+            "d1",
+            "kv",
+        ];
+
         const renderer = useRenderer();
         const [view, setView] = useState<string>("home");
         const [workers, setWorkers] = useState<Script[]>([]);
         const [durableObjects, setDurableObjects] = useState<
-            { namespace: string; objects: DurableObject[] | undefined }[]
+            {
+                namespace: string;
+                objects: DurableObject[] | undefined;
+            }[]
         >([]);
         const [r2Buckets, setR2Buckets] = useState<Bucket[]>([]);
         const [domains, setDomains] = useState<Domain[]>([]);
@@ -449,7 +462,10 @@ if (positionals.length == 2) {
                 const response = await client.workers.observability.telemetry.query({
                     account_id: config.accountId,
                     queryId: "", // Empty string to satisfy SDK validation - API will use parameters instead
-                    timeframe: { from: yesterday, to: now },
+                    timeframe: {
+                        from: yesterday,
+                        to: now,
+                    },
                     parameters: {
                         limit: 100,
                     },

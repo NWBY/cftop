@@ -5,8 +5,13 @@ function SingleMetrics({ metrics }: { metrics: WorkerSummary | null }) {
         <box borderStyle="single" width="100%" flexDirection="row" flexWrap="wrap" flexShrink={0}>
             <box width="100%">
                 <text paddingBottom={1}>
-                    <strong>Workers Summary (Last 24 hours)</strong>
+                    <strong>Worker Summary (Last 24 hours)</strong>
                 </text>
+                {metrics?.scriptName && (
+                    <text paddingBottom={1}>
+                        Worker: <strong>{metrics.scriptName}</strong>
+                    </text>
+                )}
             </box>
             <box width="25%">
                 <text paddingBottom={1}>

@@ -22,15 +22,16 @@ To use `cftop` you will need two things:
 
 1. Your account ID
 2. A user API token with the following permissions:
-   - Account Analytics:Read
-   - D1:Read
-   - Workers Agents Configuration:Read
-   - Workers Observability:Edit
-   - Workers Observability:Read
-   - Workers R2 Storage:Read
-   - Workers Tail:Read
-   - Workers Scripts:Read
-   - Workers KV Storage:Read
+    - Account Analytics:Read
+    - D1:Read
+    - Queues:Edit (edit is required for pulling messages)
+    - Workers Agents Configuration:Read
+    - Workers Observability:Edit
+    - Workers Observability:Read
+    - Workers R2 Storage:Read
+    - Workers Tail:Read
+    - Workers Scripts:Read
+    - Workers KV Storage:Read
 
 Once you've got your account ID and API token you need to initialise the config file:
 

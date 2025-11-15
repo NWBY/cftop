@@ -6,6 +6,7 @@ import type { Queue } from 'cloudflare/resources/queues/queues.mjs';
 import type { Database, DatabaseListResponse } from 'cloudflare/resources/d1.mjs';
 import type { D1 } from 'cloudflare/resources/d1/d1.mjs';
 import type { Namespace } from 'cloudflare/resources/kv.mjs';
+import type { MessagePullResponse } from 'cloudflare/resources/queues.mjs';
 
 export const getWorkers = async (): Promise<Script[]> => {
     try {
@@ -114,6 +115,24 @@ export const getQueue = async (queueId: string): Promise<Queue | null> => {
         const res = await client.queues.get(queueId, {
             account_id: accountId,
         });
+        return res;
+    } catch (error) {
+        console.error(error);
+        return null;
+    }
+}
+
+export const getQueueMessages = async (queueId: string): Promise<MessagePullResponse | null> => {
+    try {
+        const { apiToken, accountId } = await getConfig();
+        const client = new Cloudflare({
+            apiToken: apiToken,
+        });
+        const res = await client.queues.messages.pull(queueId, {
+            account_id: accountId,
+            visibility_timeout_ms: 10,
+        });
+        console.log(res);
         return res;
     } catch (error) {
         console.error(error);

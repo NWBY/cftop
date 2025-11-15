@@ -32,6 +32,7 @@ import SingleD1DatabaseView from "./views/d1/single";
 import SingleQueueView from "./views/queues/single";
 import { CheckForUpdate } from "./components/utils/check-for-update";
 import type { Namespace } from "cloudflare/src/resources/kv.js";
+import { PANELS, WORKER_TABS } from "./constants";
 
 const { values, positionals } = parseArgs({
     args: Bun.argv,
@@ -67,24 +68,6 @@ if (positionals.length == 2) {
 
     // user has just called cftop
     function App() {
-        const views = [
-            "home",
-            "single-worker",
-            "single-r2-bucket",
-            "single-d1-database",
-            "single-queue",
-        ];
-
-        const panels = [
-            "workers",
-            "durables",
-            "buckets",
-            "domains",
-            "queues",
-            "d1",
-            "kv",
-        ];
-
         const renderer = useRenderer();
         const [view, setView] = useState<string>("home");
         const [workers, setWorkers] = useState<Script[]>([]);
@@ -105,6 +88,8 @@ if (positionals.length == 2) {
         const [focussedItemLogs, setFocussedItemLogs] = useState<any[]>([]);
         const [metrics, setMetrics] = useState<WorkerSummary[]>([]);
         const [loading, setLoading] = useState<boolean>(false);
+
+        const [activeTab, setActiveTab] = useState<typeof WORKER_TABS[number]>('events');
 
         const { start, end } = CloudflareAPI.getTimeRange(24);
         const nowTimestamp = Date.now();
@@ -217,9 +202,15 @@ if (positionals.length == 2) {
             }
 
             if (key.name === "tab") {
-                setFocussedSection(
-                    panels[(panels.indexOf(focussedSection) + 1) % panels.length] as string,
-                );
+                if (view === 'home') {
+                    setFocussedSection(
+                        PANELS[(PANELS.indexOf(focussedSection) + 1) % PANELS.length] as string,
+                    );
+                } else if (view === 'single-worker') {
+                    setActiveTab(
+                        WORKER_TABS[(WORKER_TABS.indexOf(activeTab) + 1) % WORKER_TABS.length] as typeof WORKER_TABS[number],
+                    );
+                }
             }
 
             if (key.name === "escape" || key.name === "esc") {
@@ -298,13 +289,9 @@ if (positionals.length == 2) {
                         const nextIndex = (currentIndex + 1) % d1Databases.length;
                         setFocussedItem(d1Databases[nextIndex]?.uuid || "");
                     } else if (focussedSection === "queues") {
-                        console.log("down in queues");
                         const currentIndex = queues.findIndex((q) => q.queue_id === focussedItem);
-                        console.log(`queues current index: ${currentIndex}`);
                         const nextIndex = (currentIndex + 1) % queues.length;
-                        console.log(`queues next index: ${nextIndex}`);
                         setFocussedItem(queues[nextIndex]?.queue_id || "");
-                        console.log(`queues focussed item: ${focussedItem}`);
                     } else {
                         setFocussedItem("");
                     }
@@ -368,7 +355,7 @@ if (positionals.length == 2) {
             );
         } else if (view === "single-worker") {
             visibleView = (
-                <SingleWorkerView focussedItemLogs={focussedItemLogs} focussedItem={focussedItem} />
+                <SingleWorkerView focussedItemLogs={focussedItemLogs} focussedItem={focussedItem} activeTab={activeTab} />
             );
         } else if (view === "single-r2-bucket") {
             visibleView = <SingleR2BucketView focussedItem={focussedItem} />;

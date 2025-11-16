@@ -5,13 +5,16 @@ import type { WorkerSummary } from "../../types";
 import { getConfig } from "../../config";
 import { CloudflareAPI } from "../../api";
 import { useKeyboard } from "@opentui/react";
+import Tabs from "../../components/tabs";
 
 function SingleWorkerView({
     focussedItemLogs,
     focussedItem,
+    activeTab,
 }: {
     focussedItemLogs: any[];
     focussedItem: string;
+    activeTab: string;
 }) {
     const logCount = Array.isArray(focussedItemLogs)
         ? focussedItemLogs.length
@@ -19,6 +22,16 @@ function SingleWorkerView({
     const [metrics, setMetrics] = useState<WorkerSummary | null>(null);
     const [showTimestamp, setShowTimestamp] = useState<boolean>(true);
     const { start, end } = CloudflareAPI.getTimeRange(24);
+    const tabs = [
+        {
+            label: 'Events',
+            value: 'events',
+        },
+        {
+            label: 'Deployments',
+            value: 'deployments',
+        },
+    ];
 
     useKeyboard((key) => {
         if (key.name === "t") {
@@ -46,8 +59,7 @@ function SingleWorkerView({
     return (
         <box flexGrow={1} flexShrink={1} minHeight={0}>
             <SingleMetrics metrics={metrics} />
-
-            <Keybindings />
+            <Tabs tabs={tabs} activeTab={activeTab} />
 
             <scrollbox
                 borderStyle="single"
@@ -94,6 +106,7 @@ function SingleWorkerView({
                     )}
                 </box>
             </scrollbox>
+            <Keybindings />
         </box>
     );
 }

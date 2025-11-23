@@ -89,7 +89,7 @@ if (positionals.length == 2) {
         const [metrics, setMetrics] = useState<WorkerSummary[]>([]);
         const [loading, setLoading] = useState<boolean>(false);
 
-        const [activeTab, setActiveTab] = useState<typeof WORKER_TABS[number]>('events');
+        const [activeTab, setActiveTab] = useState<(typeof WORKER_TABS)[number]>("events");
 
         const { start, end } = CloudflareAPI.getTimeRange(24);
         const nowTimestamp = Date.now();
@@ -202,14 +202,11 @@ if (positionals.length == 2) {
             }
 
             if (key.name === "tab") {
-                if (view === 'home') {
+                if (view === "home") {
                     setFocussedSection(
                         PANELS[(PANELS.indexOf(focussedSection) + 1) % PANELS.length] as string,
                     );
-                } else if (view === 'single-worker') {
-                    setActiveTab(
-                        WORKER_TABS[(WORKER_TABS.indexOf(activeTab) + 1) % WORKER_TABS.length] as typeof WORKER_TABS[number],
-                    );
+                } else if (view === "single-worker") {
                 }
             }
 
@@ -355,7 +352,10 @@ if (positionals.length == 2) {
             );
         } else if (view === "single-worker") {
             visibleView = (
-                <SingleWorkerView focussedItemLogs={focussedItemLogs} focussedItem={focussedItem} activeTab={activeTab} />
+                <SingleWorkerView
+                    focussedItemLogs={focussedItemLogs}
+                    focussedItem={focussedItem}
+                />
             );
         } else if (view === "single-r2-bucket") {
             visibleView = <SingleR2BucketView focussedItem={focussedItem} />;

@@ -6,21 +6,22 @@ import { getConfig } from "../../config";
 import { CloudflareAPI } from "../../api";
 import { useKeyboard } from "@opentui/react";
 import Tabs from "../../components/tabs";
+import { WORKER_TABS } from "../../constants";
 
 function SingleWorkerView({
     focussedItemLogs,
     focussedItem,
-    activeTab,
 }: {
     focussedItemLogs: any[];
     focussedItem: string;
-    activeTab: string;
 }) {
     const logCount = Array.isArray(focussedItemLogs)
         ? focussedItemLogs.length
         : 0;
+    const [view, setView] = useState<"events" | "deployments">("events");
     const [metrics, setMetrics] = useState<WorkerSummary | null>(null);
     const [showTimestamp, setShowTimestamp] = useState<boolean>(true);
+    const [activeTab, setActiveTab] = useState<typeof WORKER_TABS[number]>("events");
     const { start, end } = CloudflareAPI.getTimeRange(24);
     const tabs = [
         {
@@ -36,6 +37,18 @@ function SingleWorkerView({
     useKeyboard((key) => {
         if (key.name === "t") {
             setShowTimestamp((prev) => !prev);
+        }
+
+        if (key.name === 'tab') {
+            setActiveTab(
+                WORKER_TABS[
+                (WORKER_TABS.indexOf(activeTab) + 1) % WORKER_TABS.length
+                ] as (typeof WORKER_TABS)[number],
+            );
+        }
+
+        if (key.name === "return") {
+            setActiveTab("events");
         }
     });
 
@@ -61,51 +74,58 @@ function SingleWorkerView({
             <SingleMetrics metrics={metrics} />
             <Tabs tabs={tabs} activeTab={activeTab} />
 
-            <scrollbox
-                borderStyle="single"
-                borderColor="orange"
-                width="100%"
-                focused
-                flexGrow={1}
-                flexShrink={1}
-                minHeight={0}
-                style={{ wrapperOptions: { borderColor: "orange" } }}
-            >
-                <box width="100%">
-                    <box marginBottom={1}>
-                        <text>
-                            <strong>
-                                <u>
-                                    {focussedItem} events ({logCount} total)
-                                </u>
-                            </strong>
-                        </text>
-                    </box>
-                    {/* @ts-ignore */}
-                    {focussedItemLogs &&
-                        Array.isArray(focussedItemLogs) &&
-                        focussedItemLogs.length > 0 ? (
-                        focussedItemLogs.map((log: any, index: number) => {
-                            const logMessage =
-                                log.$metadata?.messageTemplate || JSON.stringify(log);
+            {view === "events" && (
+                <scrollbox
+                    borderStyle="single"
+                    borderColor="orange"
+                    width="100%"
+                    focused
+                    flexGrow={1}
+                    flexShrink={1}
+                    minHeight={0}
+                    style={{ wrapperOptions: { borderColor: "orange" } }}
+                >
+                    <box width="100%">
+                        <box marginBottom={1}>
+                            <text>
+                                <strong>
+                                    <u>
+                                        {focussedItem} events ({logCount} total)
+                                    </u>
+                                </strong>
+                            </text>
+                        </box>
+                        {/* @ts-ignore */}
+                        {focussedItemLogs &&
+                            Array.isArray(focussedItemLogs) &&
+                            focussedItemLogs.length > 0 ? (
+                            focussedItemLogs.map((log: any, index: number) => {
+                                const logMessage =
+                                    log.$metadata?.messageTemplate || JSON.stringify(log);
 
-                            return (
-                                <box
-                                    key={`${log.$metadata?.id || index}-${index}`}
-                                    flexDirection="column"
-                                >
-                                    <box flexDirection="row">
-                                        {showTimestamp && <LogTimestamp log={log} />}
-                                        <text>{logMessage}</text>
+                                return (
+                                    <box
+                                        key={`${log.$metadata?.id || index}-${index}`}
+                                        flexDirection="column"
+                                    >
+                                        <box flexDirection="row">
+                                            {showTimestamp && <LogTimestamp log={log} />}
+                                            <text>{logMessage}</text>
+                                        </box>
                                     </box>
-                                </box>
-                            );
-                        })
-                    ) : (
-                        <text>No logs yet...</text>
-                    )}
+                                );
+                            })
+                        ) : (
+                            <text>No logs yet...</text>
+                        )}
+                    </box>
+                </scrollbox>
+            )}
+            {view === "deployments" && (
+                <box>
+                    <text>Deployments</text>
                 </box>
-            </scrollbox>
+            )}
             <Keybindings />
         </box>
     );
